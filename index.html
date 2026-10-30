@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harborlight Income Statement Lab</title>
+<style>
+:root {
+  --bg:#faf6f0; --card:#fffdf9; --ink:#2b1d14; --text:#4a3a2f; --muted:#8a7766; --line:#e6dccf; --soft:#f1e8db;
+  --accent:#b5651d; --accent-ink:#fff; --good:#2f7d5b; --bad:#b3402a; --warn:#b07a12;
+  --c-rev:#2b1d14; --c-cogs:#6f4e37; --c-wages:#c28b5a; --c-rent:#8c6a8f; --c-other:#d6b98c; --c-int:#6b8ba4; --c-tax:#9aa0a6; --c-net:#2f7d5b; --c-rest:#e6dccf;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#17110d; --card:#211812; --ink:#f4e8da; --text:#d8c6b3; --muted:#a08c79; --line:#3a2c22; --soft:#2a1f17;
+  --accent:#e0913d; --accent-ink:#1a1008; --good:#5cc496; --bad:#ef7d63; --warn:#e0b04a;
+  --c-rev:#f4e8da; --c-cogs:#a8805f; --c-wages:#d89a63; --c-rent:#b48fb7; --c-other:#9c825a; --c-int:#7fa3bd; --c-tax:#8b9197; --c-net:#5cc496; --c-rest:#3a2c22; } }
+:root[data-theme="dark"] {
+  --bg:#17110d; --card:#211812; --ink:#f4e8da; --text:#d8c6b3; --muted:#a08c79; --line:#3a2c22; --soft:#2a1f17;
+  --accent:#e0913d; --accent-ink:#1a1008; --good:#5cc496; --bad:#ef7d63; --warn:#e0b04a;
+  --c-rev:#f4e8da; --c-cogs:#a8805f; --c-wages:#d89a63; --c-rent:#b48fb7; --c-other:#9c825a; --c-int:#7fa3bd; --c-tax:#8b9197; --c-net:#5cc496; --c-rest:#3a2c22; }
+* { box-sizing:border-box; }
+html { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+.wrap { max-width:1040px; margin:0 auto; padding:20px 16px 56px; }
+h1,h2,h3 { font-family:ui-serif,Georgia,"Times New Roman",serif; color:var(--ink); text-wrap:balance; margin:0; }
+h1 { font-size:clamp(26px,5vw,38px); line-height:1.1; }
+h2 { font-size:clamp(21px,3.4vw,26px); margin-bottom:6px; }
+h3 { font-size:17px; }
+p { margin:0 0 10px; }
+.top { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+.eyebrow { color:var(--accent); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+.lede { max-width:68ch; color:var(--text); margin-top:8px; }
+.theme { border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:20px; padding:5px 12px; font:inherit; font-size:13px; cursor:pointer; }
+nav.tabs { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 18px; padding-bottom:12px; border-bottom:2px solid var(--line); }
+nav.tabs button { display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--card); color:var(--text); border-radius:10px; padding:8px 14px; font:inherit; font-weight:600; cursor:pointer; }
+nav.tabs button b { width:22px; height:22px; border-radius:50%; background:var(--soft); color:var(--ink); font-size:12px; display:grid; place-items:center; }
+nav.tabs button[aria-selected="true"] { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+nav.tabs button[aria-selected="true"] b { background:var(--accent); color:var(--accent-ink); }
+section.mod { display:none; } section.mod.on { display:block; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+.grid2 { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:16px; margin-top:14px; align-items:start; }
+@media (max-width:820px) { .grid2 { grid-template-columns:minmax(0,1fr); } }
+.brief { background:var(--soft); border-radius:12px; padding:14px 18px; margin:14px 0 0; display:flex; gap:14px; flex-wrap:wrap; }
+.brief div { flex:1 1 240px; min-width:0; }
+.brief b { color:var(--ink); }
+button.btn { background:var(--accent); color:var(--accent-ink); border:0; border-radius:8px; padding:9px 16px; font:inherit; font-weight:700; cursor:pointer; }
+button.btn.ghost { background:transparent; color:var(--text); border:1px solid var(--line); }
+button.btn:disabled { opacity:.45; cursor:default; }
+.row-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; }
+table.is { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+table.is td, table.is th { padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; }
+table.is td:first-child, table.is th:first-child { text-align:left; }
+table.is th { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+table.is tr.sub td { font-weight:700; color:var(--ink); background:var(--soft); }
+table.is tr.indent td:first-child { padding-left:22px; }
+table.is tr.hidden td { color:transparent; text-shadow:0 0 8px var(--muted); user-select:none; }
+table.is tr.hidden td:first-child { text-shadow:0 0 6px var(--muted); }
+table.is tr.click { cursor:pointer; } table.is tr.click:hover td { background:var(--soft); }
+table.is tr.focus td { outline:0; box-shadow:inset 3px 0 0 var(--accent); }
+.tablewrap { overflow-x:auto; }
+.explain { min-height:150px; }
+.explain .term { color:var(--accent); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.explain .formula { background:var(--soft); border-radius:8px; padding:8px 12px; font-family:ui-monospace,Menlo,monospace; font-size:13px; margin:8px 0; overflow-x:auto; }
+.explain .why { border-left:3px solid var(--accent); padding-left:10px; color:var(--muted); font-size:14px; }
+.dots { display:flex; gap:4px; margin-top:12px; } .dots i { height:6px; flex:1; border-radius:3px; background:var(--line); } .dots i.on { background:var(--accent); }
+.bar100 { display:flex; height:46px; border-radius:8px; overflow:hidden; background:var(--c-rest); margin:10px 0; border:1px solid var(--line); }
+.bar100 i { display:block; height:100%; transition:width .45s ease; min-width:0; }
+.legend { display:grid; gap:4px; font-size:14px; margin:0; padding:0; list-style:none; }
+.legend li { display:flex; align-items:center; gap:8px; } .legend b { width:11px; height:11px; border-radius:3px; flex:none; } .legend span:last-child { margin-left:auto; font-variant-numeric:tabular-nums; color:var(--ink); font-weight:600; }
+.guess { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
+.guess input, .nov input[type=number] { width:150px; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); font:inherit; }
+.kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:12px 0; }
+.kpi { background:var(--soft); border-radius:10px; padding:10px 14px; } .kpi span { display:block; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; } .kpi strong { display:block; color:var(--ink); font-size:24px; font-family:ui-serif,Georgia,serif; } .kpi small { color:var(--muted); }
+.sliders { display:grid; gap:12px; }
+.sl label { display:flex; justify-content:space-between; gap:10px; font-size:14px; color:var(--ink); font-weight:600; } .sl output { font-variant-numeric:tabular-nums; color:var(--accent); }
+.sl input[type=range] { width:100%; accent-color:var(--accent); } .sl small { color:var(--muted); font-size:12px; }
+.up { color:var(--good); } .down { color:var(--bad); } .flat { color:var(--muted); }
+.goal { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); } .goal:last-child { border:0; }
+.goal .chk { width:22px; height:22px; border-radius:50%; border:2px solid var(--line); flex:none; display:grid; place-items:center; font-size:13px; color:transparent; }
+.goal.done .chk { background:var(--good); border-color:var(--good); color:#fff; }
+.goal small { display:block; color:var(--muted); }
+.opts { display:grid; gap:8px; margin:10px 0; }
+.opt { text-align:left; border:1px solid var(--line); background:var(--card); color:var(--text); border-radius:10px; padding:10px 14px; font:inherit; cursor:pointer; }
+.opt:hover:not(:disabled) { border-color:var(--accent); } .opt:disabled { cursor:default; }
+.opt.right { border-color:var(--good); background:color-mix(in srgb, var(--good) 14%, var(--card)); } .opt.wrong { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 12%, var(--card)); }
+.fb { padding:10px 14px; border-radius:10px; background:var(--soft); margin-top:8px; }
+.bridge { display:grid; gap:6px; margin:12px 0; }
+.bridge .br { display:grid; grid-template-columns:minmax(120px,170px) 1fr 88px; gap:10px; align-items:center; font-size:14px; }
+.bridge .tr { height:16px; position:relative; background:var(--soft); border-radius:3px; } .bridge .tr i { position:absolute; top:0; bottom:0; border-radius:3px; }
+.bridge .tr::after { content:""; position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--muted); }
+.bridge .v { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; }
+.q-progress { color:var(--muted); font-size:13px; margin-bottom:6px; }
+.score { font-family:ui-serif,Georgia,serif; font-size:44px; color:var(--ink); }
+.foot { color:var(--muted); font-size:13px; margin-top:28px; border-top:1px solid var(--line); padding-top:12px; }
+.chip { display:inline-block; padding:1px 8px; border-radius:10px; background:var(--soft); font-size:12px; color:var(--muted); }
+.heat { font-variant-numeric:tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .bar100 i { transition:none; } }
+:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Interactive case study &middot; Financial accounting</div>
+      <h1>The Harborlight Income Statement Lab</h1>
+    </div>
+    <button class="theme" id="theme" type="button" aria-label="Switch between light and dark">Light / dark</button>
+  </div>
+  <p class="lede">Follow one small business through its income statement. Build it a line at a time, change the numbers and watch the bottom line move, then work out why a growing business made almost no profit the next year.</p>
+  <div class="brief">
+    <div><b>The company.</b> Harborlight Coffee Roasters is a fictional café and roastery. It serves coffee by the cup and sells roasted beans by the bag. We follow its income statement for one month, June.</div>
+    <div><b>The question.</b> After a month of selling, how much is left for the owners, and what decides it? (All figures are made up for teaching.)</div>
+  </div>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Lab steps"></nav>
+
+  <!-- 1 BUILD -->
+  <section class="mod" id="m1">
+    <h2>1. Build the income statement, line by line</h2>
+    <p>An income statement answers one question: <i>did the business make money over a period of time?</i> Start at the top with sales and subtract costs until you reach the bottom line. Press <b>Next line</b> to reveal each one, or click a line to read about it again.</p>
+    <div class="guess card"><b>First, a guess.</b> Revenue for the month is <b id="revText"></b>. How much do you think the owners keep as net income?
+      <div class="guess"><label>Your guess ($) <input id="guess" type="number" min="0" step="50" placeholder="e.g. 1200"></label><span id="guessMsg" class="chip">Guess before you start; you will see how close you were.</span></div></div>
+    <div class="grid2">
+      <div class="card"><div class="tablewrap"><table class="is" id="isTable"></table></div>
+        <div class="row-actions"><button class="btn" id="next" type="button">Next line &rarr;</button><button class="btn ghost" id="restart" type="button">Start over</button><button class="btn ghost" id="all" type="button">Show all</button></div>
+        <div class="dots" id="dots"></div></div>
+      <div>
+        <div class="card explain" id="explain" aria-live="polite"></div>
+        <div class="card" style="margin-top:14px"><h3>Where does each $1 of sales go?</h3>
+          <div class="bar100" id="bar100" role="img" aria-label="How each dollar of revenue is used"></div>
+          <ul class="legend" id="legend"></ul>
+          <p style="margin:10px 0 0;color:var(--muted);font-size:14px">The grey part is "not yet accounted for". Profit is whatever is left once every cost has been taken out.</p></div>
+      </div>
+    </div>
+    <div class="row-actions"><button class="btn" data-go="2" type="button">Next: change the numbers &rarr;</button></div>
+  </section>
+
+  <!-- 2 WHAT IF -->
+  <section class="mod" id="m2">
+    <h2>2. What if&hellip; change one thing and follow it down the page</h2>
+    <p>Move the sliders. Everything below recalculates. Watch which lines move and which stay put: rent does not care how many cups you sell, but cost of goods sold does.</p>
+    <div class="grid2">
+      <div class="card"><div class="sliders" id="sliders"></div><div class="row-actions"><button class="btn ghost" id="reset" type="button">Reset to Year 1</button></div></div>
+      <div>
+        <div class="card"><div class="kpis" id="kpis2"></div><div class="tablewrap"><table class="is" id="isWhat"></table></div></div>
+        <div class="card" style="margin-top:14px"><h3>Challenges</h3><div id="goals"></div></div>
+      </div>
+    </div>
+    <div class="row-actions"><button class="btn" data-go="3" type="button">Next: two years side by side &rarr;</button></div>
+  </section>
+
+  <!-- 3 COMPARE -->
+  <section class="mod" id="m3">
+    <h2>3. Sales grew. So why did profit collapse?</h2>
+    <p>A year later, Harborlight has opened a second cart, run a promotion on cups, hired staff and borrowed more. Compare the same month, June, in both years, then take a position before the answer is shown.</p>
+    <div class="card"><div class="tablewrap"><table class="is" id="isCompare"></table></div>
+      <p class="chip" style="margin-top:10px">Right-hand columns show each line as a share of that year's revenue (a "common-size" view).</p></div>
+    <div class="card" style="margin-top:14px" id="quiz3"></div>
+    <div class="row-actions"><button class="btn" data-go="4" type="button">Next: check your understanding &rarr;</button></div>
+  </section>
+
+  <!-- 4 QUIZ -->
+  <section class="mod" id="m4">
+    <h2>4. Check your understanding</h2>
+    <div class="card" id="quiz"></div>
+  </section>
+
+  <p class="foot">Harborlight Coffee Roasters is a fictional company and every number here is invented for teaching. All amounts are for one month. The model is simplified: one tax rate, no inventory change, depreciation is straight-line. Nothing you enter leaves your device.</p>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const money = n => (n < 0 ? "−" : "") + "$" + Math.abs(Math.round(n)).toLocaleString("en-US");
+const money2 = n => "$" + n.toFixed(2);
+const num = n => Math.round(n).toLocaleString("en-US");
+const pc = (n, d = 1) => (n * 100).toFixed(d) + "%";
+const sgn = n => (n > 0 ? "+" : n < 0 ? "−" : "");
+
+/* ------------------------------ the case ------------------------------ */
+/* One month (June). Year 1 and Year 2 are the same month, a year apart. Amounts are monthly dollars. */
+const Y1 = { cups:1000, cupPrice:4.00, bags:100, bagPrice:15.00, cupCost:1.00, bagCost:6.00,
+             wages:1700, rent:600, marketing:150, util:200, dep:100, debt:6000, rate:0.06, taxRate:0.25 };
+const Y2 = { cups:1250, cupPrice:3.90, bags:140, bagPrice:14.00, cupCost:1.10, bagCost:6.50,
+             wages:2600, rent:1000, marketing:300, util:260, dep:175, debt:18000, rate:0.06, taxRate:0.25 };
+
+function stmt(m) {
+  const cupRev = m.cups * m.cupPrice, bagRev = m.bags * m.bagPrice;
+  const rev = cupRev + bagRev;
+  const cogs = m.cups * m.cupCost + m.bags * m.bagCost;
+  const gp = rev - cogs;
+  const opex = m.wages + m.rent + m.marketing + m.util + m.dep;
+  const ebit = gp - opex;
+  const interest = m.debt * m.rate / 12;   // annual rate, one month
+  const ebt = ebit - interest;
+  const tax = Math.max(0, ebt * m.taxRate);
+  const net = ebt - tax;
+  return { cupRev, bagRev, rev, cogs, gp, opex, ebit, interest, ebt, tax, net,
+           gm: gp / rev, om: ebit / rev, nm: net / rev };
+}
+const S1 = stmt(Y1), S2 = stmt(Y2);
+
+const Q = [
+  { q:"Which line is revenue minus cost of goods sold?", o:["Operating income","Gross profit","Net income","Income before taxes"], a:1, e:"Gross profit = revenue − COGS. Operating expenses come off after that." },
+  { q:`Harborlight's rent is ${money(Y1.rent)} a month. Which description fits rent best?`, o:["Cost of goods sold, because it is needed to sell coffee","An operating expense that does not change with the number of cups sold","Interest expense","Income tax expense"], a:1, e:"Rent is an operating expense and it is fixed: it stays the same whether Harborlight sells 800 cups or 1,200." },
+  { q:`Year 1 gross profit was ${money(S1.gp)} on revenue of ${money(S1.rev)}. What is the gross margin?`, o:[pc(S1.gp / S1.rev, 1), pc(S1.ebit / S1.rev, 1), pc(S1.net / S1.rev, 1), pc(S1.cogs / S1.rev, 1)], a:0, e:`Gross margin = gross profit ÷ revenue = ${money(S1.gp)} ÷ ${money(S1.rev)}. The others are the operating margin, the net margin and COGS as a share of sales.` },
+  { q:`Depreciation of ${money(Y1.dep)} appears on the June income statement. What does that mean?`, o:[`Harborlight paid ${money(Y1.dep)} in cash in June for equipment`,"Harborlight is spreading part of the cost of equipment bought earlier over its useful life",`The equipment lost ${money(Y1.dep)} in the stock market`,`Harborlight owes ${money(Y1.dep)} in taxes`], a:1, e:"Depreciation is a non-cash expense that matches the cost of equipment to the years it helps earn revenue." },
+  { q:"Why does interest expense come after operating income?", o:["It is the smallest line","It results from how the business is financed, not how well it operates","It is not an expense","The tax authority requires it"], a:1, e:"Operating income measures the core business. Interest depends on how much was borrowed, so it is shown below." },
+  { q:"If Harborlight sells 10% more cups next year and nothing else changes, which lines go up automatically?", o:["Revenue and cost of goods sold","Revenue and rent","Rent and wages","Depreciation and interest"], a:0, e:"Revenue and COGS are tied to volume. Rent, depreciation and interest are fixed in the short run." },
+  { q:`Income before taxes is ${money(S1.ebt)} and the tax rate is 25%. What is income tax expense?`, o:[money(S1.ebt * 0.25), money(S1.ebit * 0.25), money(S1.rev * 0.25), money(S1.net * 0.25)], a:0, e:"Tax is charged on income before taxes, not on revenue or on net income." },
+  { q:`In Year 2 revenue grew ${pc(S2.rev / S1.rev - 1, 0)} but net income fell ${pc(1 - S2.net / S1.net, 0)}. What is the best explanation?`, o:["The tax rate doubled","Costs, especially wages and rent, grew faster than gross profit","Revenue was recorded wrongly","Depreciation is a cash cost"], a:1, e:`Operating expenses grew from ${pc(S1.opex / S1.rev, 0)} to ${pc(S2.opex / S2.rev, 0)} of sales. Growth that costs more than it earns lowers profit.` },
+];
+/* ------------------------------ tabs ------------------------------ */
+const MODS = ["Build it", "What if?", "Two years", "Check yourself"];
+let mod = 1;
+function showMod(n) {
+  mod = n;
+  document.querySelectorAll("section.mod").forEach((s, i) => s.classList.toggle("on", i + 1 === n));
+  $("tabs").innerHTML = MODS.map((l, i) => `<button type="button" role="tab" aria-selected="${i + 1 === n}" data-m="${i + 1}"><b>${i + 1}</b>${l}</button>`).join("");
+  document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showMod(+b.dataset.m));
+  try { history.replaceState(null, "", "#" + n); } catch (e) {}
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => showMod(+b.dataset.go));
+$("theme").onclick = () => {
+  const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = dark ? "light" : "dark";
+};
+
+/* ------------------------------ 1. build ------------------------------ */
+const STEPS = [
+  { k:"rev", label:"Revenue (sales)", sub:false, val:s=>s.rev, seg:null, term:"Revenue",
+    what:"Revenue is the money customers paid for what Harborlight sold. It sells two things: cups served in the café and bags of beans.",
+    formula:(m,s)=>`${num(m.cups)} cups × ${money2(m.cupPrice)} + ${num(m.bags)} bags × ${money2(m.bagPrice)} = ${money(s.rev)}`,
+    why:"It is the top line. Every dollar of profit has to come out of this number, so we measure everything else against it." },
+  { k:"cogs", label:"Cost of goods sold (COGS)", val:s=>-s.cogs, seg:"cogs", term:"Cost of goods sold",
+    what:"The direct cost of the things we sold: coffee beans, milk, cups and lids, bag packaging. If sales double, this roughly doubles.",
+    formula:(m,s)=>`${num(m.cups)} × ${money2(m.cupCost)} + ${num(m.bags)} × ${money2(m.bagCost)} = ${money(s.cogs)}`,
+    why:"COGS moves with volume. It is a variable cost." },
+  { k:"gp", label:"Gross profit", sub:true, val:s=>s.gp, seg:null, term:"Gross profit",
+    what:"Revenue minus COGS. It is what is left to pay for everything else in the business. Divide by revenue to get the gross margin percentage.",
+    formula:(m,s)=>`${money(s.rev)} − ${money(s.cogs)} = ${money(s.gp)}   (gross margin ${pc(s.gm)})`,
+    why:(m,s)=>`A ${Math.round(s.gm * 100)}% gross margin means about ${Math.round(s.gm * 100)} cents of every sales dollar is left after paying for the product itself.` },
+  { k:"wages", label:"Wages and benefits", indent:true, val:s=>-Y1.wages, seg:"wages", term:"Operating expense",
+    what:"Operating expenses are the costs of running the business that are not the product itself. Wages for baristas, roasters and the manager are the largest.",
+    formula:(m)=>`Wages and benefits = ${money(m.wages)}`,
+    why:"Mostly fixed in the short run: you pay staff whether the shop is busy or quiet." },
+  { k:"rent", label:"Rent", indent:true, val:s=>-Y1.rent, seg:"rent", term:"Operating expense",
+    what:"The lease on the café and the roasting space.",
+    formula:(m)=>`Rent = ${money(m.rent)}`,
+    why:"A fixed cost. One more cup sold does not change it, which is why busy periods help profit so much." },
+  { k:"mkt", label:"Marketing", indent:true, val:s=>-Y1.marketing, seg:"other", term:"Operating expense",
+    what:"Advertising, social media and loyalty offers to bring customers in.", formula:(m)=>`Marketing = ${money(m.marketing)}`,
+    why:"Spending here is a choice. It is only worth it if it brings in more gross profit than it costs." },
+  { k:"util", label:"Utilities and supplies", indent:true, val:s=>-Y1.util, seg:"other", term:"Operating expense",
+    what:"Electricity, water, gas for the roaster, cleaning supplies, software.", formula:(m)=>`Utilities and supplies = ${money(m.util)}`,
+    why:"Partly fixed, partly tied to how busy the shop is." },
+  { k:"dep", label:"Depreciation", indent:true, val:s=>-Y1.dep, seg:"other", term:"Depreciation",
+    what:"Harborlight bought $12,000 of equipment (an espresso machine and a small roaster) that lasts about 10 years. Accounting spreads the cost over those years instead of charging it all at once.",
+    formula:(m)=>`$12,000 ÷ 10 years ÷ 12 months = ${money(m.dep)} per month`,
+    why:"It is an expense on the income statement, but no cash leaves the bank this month. This is a classic exam point." },
+  { k:"opex", label:"Total operating expenses", sub:true, val:s=>-s.opex, seg:null, term:"Operating expenses",
+    what:"All the running costs added together.", formula:(m,s)=>`${money(m.wages)} + ${money(m.rent)} + ${money(m.marketing)} + ${money(m.util)} + ${money(m.dep)} = ${money(s.opex)}`,
+    why:"Compare it with gross profit. Gross profit has to be bigger than this for the business to make an operating profit." },
+  { k:"ebit", label:"Operating income (EBIT)", sub:true, val:s=>s.ebit, seg:null, term:"Operating income",
+    what:"Gross profit minus operating expenses. It is the profit from running the business, before anyone is paid for lending money and before taxes. EBIT stands for earnings before interest and taxes.",
+    formula:(m,s)=>`${money(s.gp)} − ${money(s.opex)} = ${money(s.ebit)}   (operating margin ${pc(s.om)})`,
+    why:"The cleanest test of whether the core business works. Two companies with different loans can still be compared here." },
+  { k:"int", label:"Interest expense", indent:true, val:s=>-s.interest, seg:"int", term:"Interest",
+    what:"The cost of borrowing. Harborlight has a $6,000 loan at 6% a year. Interest sits below operating income because it is a result of how the business is financed, not how well it operates.",
+    formula:(m,s)=>`${money(m.debt)} × ${pc(m.rate)} ÷ 12 months = ${money(s.interest)}`, why:"Lenders get paid before owners do." },
+  { k:"ebt", label:"Income before taxes", sub:true, val:s=>s.ebt, seg:null, term:"Pre-tax income",
+    what:"Operating income minus interest. This is the amount the government taxes.", formula:(m,s)=>`${money(s.ebit)} − ${money(s.interest)} = ${money(s.ebt)}`,
+    why:"Also called EBT, earnings before taxes." },
+  { k:"tax", label:"Income tax expense", indent:true, val:s=>-s.tax, seg:"tax", term:"Income tax",
+    what:"A tax on profit. We use a flat 25% to keep the case simple. If pre-tax income were negative there would be no tax.",
+    formula:(m,s)=>`${money(s.ebt)} × ${pc(m.taxRate, 0)} = ${money(s.tax)}`, why:"Tax is a share of profit, so a bad year pays less tax." },
+  { k:"net", label:"Net income", sub:true, val:s=>s.net, seg:"net", term:"Net income",
+    what:"The bottom line. What is left for the owners after every cost, interest and tax. The owners can keep it in the business or take it out. Divide by revenue for the net margin.",
+    formula:(m,s)=>`${money(s.ebt)} − ${money(s.tax)} = ${money(s.net)}   (net margin ${pc(s.nm)})`,
+    why:(m,s)=>`Of every sales dollar, about ${Math.round(s.nm * 100)} cents ends up as profit. The rest went to ingredients, people, rent, the lender and the government.` },
+];
+const SEGS = { cogs:["Ingredients and packaging (COGS)","--c-cogs"], wages:["Wages","--c-wages"], rent:["Rent","--c-rent"], other:["Other operating costs","--c-other"], int:["Interest","--c-int"], tax:["Taxes","--c-tax"], net:["Profit (net income)","--c-net"] };
+let shown = 0, focusIdx = 0;
+
+function renderBuild() {
+  $("revText").textContent = money(S1.rev);
+  const rows = [`<tr><th>Income statement, June (Year 1)</th><th>Amount</th></tr>`];
+  STEPS.forEach((st, i) => {
+    const vis = i < shown;
+    rows.push(`<tr class="${st.sub ? "sub " : ""}${st.indent ? "indent " : ""}${vis ? "click" : "hidden"}${vis && i === focusIdx ? " focus" : ""}" data-i="${i}"><td>${st.label}</td><td>${vis ? money(st.val(S1)) : "$000,000"}</td></tr>`);
+  });
+  $("isTable").innerHTML = rows.join("");
+  $("isTable").querySelectorAll("tr.click").forEach(r => { r.onclick = () => { focusIdx = +r.dataset.i; renderBuild(); }; });
+  $("dots").innerHTML = STEPS.map((_, i) => `<i class="${i < shown ? "on" : ""}"></i>`).join("");
+  $("next").disabled = shown >= STEPS.length;
+  $("next").textContent = shown === 0 ? "Reveal the first line →" : "Next line →";
+  const st = shown ? STEPS[Math.min(focusIdx, shown - 1)] : null;
+  $("explain").innerHTML = st
+    ? `<div class="term">${st.term}</div><h3>${st.label}</h3><p>${st.what}</p><div class="formula">${st.formula(Y1, S1)}</div><div class="why">${typeof st.why === "function" ? st.why(Y1, S1) : st.why}</div>`
+    : `<div class="term">Start here</div><h3>The income statement</h3><p>It lists what a business earned and what it spent over a period, here one month. Each line you reveal gets a plain-English explanation and the exact calculation.</p><p style="color:var(--muted)">It covers a <i>period of time</i>, unlike a balance sheet, which is a snapshot on one day.</p>`;
+  // dollar bar: cents per revenue dollar for the revealed expense lines
+  const per = { cogs:S1.cogs, wages:Y1.wages, rent:Y1.rent, other:Y1.marketing + Y1.util + Y1.dep, int:S1.interest, tax:S1.tax, net:S1.net };
+  const done = new Set(STEPS.slice(0, shown).map(s => s.k));
+  const seg = { cogs: done.has("cogs"), wages: done.has("wages"), rent: done.has("rent"),
+                other: done.has("dep"), int: done.has("int"), tax: done.has("tax"), net: done.has("net") };
+  // "other" fills in as its lines appear
+  const otherParts = (done.has("mkt") ? Y1.marketing : 0) + (done.has("util") ? Y1.util : 0) + (done.has("dep") ? Y1.dep : 0);
+  const val = { ...per, other: otherParts };
+  let used = 0; const parts = [];
+  Object.keys(SEGS).forEach(k => {
+    const v = k === "other" ? val.other : (seg[k] ? val[k] : 0);
+    if (v > 0) { const w = v / S1.rev * 100; used += w; parts.push([k, w, v]); }
+  });
+  $("bar100").innerHTML = parts.map(([k, w]) => `<i title="${SEGS[k][0]}" style="width:${w}%;background:var(${SEGS[k][1]})"></i>`).join("");
+  const rest = Math.max(0, 100 - used);
+  $("legend").innerHTML = parts.map(([k, w]) => `<li><b style="background:var(${SEGS[k][1]})"></b><span>${SEGS[k][0]}</span><span>${w.toFixed(1)}¢</span></li>`).join("") +
+    (shown >= 1 && rest > 0.05 ? `<li><b style="background:var(--c-rest)"></b><span>Not yet accounted for</span><span>${rest.toFixed(1)}¢</span></li>` : "") +
+    (shown === 0 ? `<li><span style="color:var(--muted)">Reveal a line to start filling the dollar.</span></li>` : "");
+  // guess feedback at the end
+  const g = parseFloat($("guess").value);
+  $("guessMsg").textContent = shown >= STEPS.length && g > 0
+    ? `You guessed ${money(g)}. Actual net income is ${money(S1.net)}, ${g > S1.net ? "so you were " + money(g - S1.net) + " too high" : "so you were " + money(S1.net - g) + " too low"}. The gap is usually the costs below the gross profit line.`
+    : "Guess before you start; you will see how close you were.";
+}
+$("next").onclick = () => { if (shown < STEPS.length) { shown++; focusIdx = shown - 1; renderBuild(); } };
+$("restart").onclick = () => { shown = 0; focusIdx = 0; renderBuild(); };
+$("all").onclick = () => { shown = STEPS.length; focusIdx = STEPS.length - 1; renderBuild(); };
+$("guess").oninput = renderBuild;
+
+/* ------------------------------ 2. what if ------------------------------ */
+const SL = [
+  { k:"cupPrice", label:"Price per cup", min:3, max:6, step:0.05, f:money2, note:"Higher prices raise revenue, but customers may buy fewer cups." },
+  { k:"cups", label:"Cups sold in the month", min:500, max:2000, step:25, f:num, note:"About 33 a day at 1,000." },
+  { k:"bagPrice", label:"Price per bag of beans", min:10, max:20, step:0.25, f:money2 },
+  { k:"bags", label:"Bags sold in the month", min:40, max:300, step:5, f:num },
+  { k:"cupCost", label:"Ingredient cost per cup", min:0.6, max:1.6, step:0.01, f:money2, note:"Beans, milk, cup and lid." },
+  { k:"wages", label:"Wages and benefits", min:1000, max:4000, step:50, f:money },
+  { k:"rent", label:"Rent", min:300, max:1800, step:25, f:money, note:"A fixed cost." },
+  { k:"marketing", label:"Marketing", min:0, max:600, step:10, f:money },
+  { k:"rate", label:"Interest rate on the loan", min:0.02, max:0.14, step:0.0025, f:v => pc(v, 2) },
+];
+let cur = { ...Y1 };
+function renderWhat() {
+  const s = stmt(cur);
+  const lines = [["Revenue", "rev", false], ["Cost of goods sold", "cogs", true, -1], ["Gross profit", "gp", false, 1, true], ["Operating expenses", "opex", true, -1],
+                 ["Operating income (EBIT)", "ebit", false, 1, true], ["Interest", "interest", true, -1], ["Income tax", "tax", true, -1], ["Net income", "net", false, 1, true]];
+  const delta = (a, b) => { const d = a - b; return Math.abs(d) < 1 ? `<span class="flat">–</span>` : `<span class="${d > 0 ? "up" : "down"}">${sgn(d)}${money(Math.abs(d))}</span>`; };
+  $("isWhat").innerHTML = `<tr><th>Line</th><th>Now</th><th>vs Year 1</th></tr>` + lines.map(([l, k, ind, sign, sub]) => {
+    const v = (sign === -1 ? -1 : 1) * s[k], b = (sign === -1 ? -1 : 1) * S1[k];
+    return `<tr class="${sub ? "sub" : ""} ${ind ? "indent" : ""}"><td>${l}</td><td>${money(v)}</td><td>${delta(v, b)}</td></tr>`;
+  }).join("");
+  const be = (s.opex + s.interest) / s.gm;
+  $("kpis2").innerHTML = `<div class="kpi"><span>Net income</span><strong class="${s.net >= 0 ? "" : "down"}">${money(s.net)}</strong><small>${pc(s.nm)} net margin</small></div>
+    <div class="kpi"><span>Gross margin</span><strong>${pc(s.gm)}</strong><small>Year 1: ${pc(S1.gm)}</small></div>
+    <div class="kpi"><span>Operating margin</span><strong>${pc(s.om)}</strong><small>Year 1: ${pc(S1.om)}</small></div>
+    <div class="kpi"><span>Break-even sales</span><strong>${money(be)}</strong><small>${s.rev > be ? pc((s.rev - be) / s.rev, 0) + " cushion" : "below break-even"}</small></div>`;
+  const same = k => Math.abs(cur[k] - Y1[k]) < 1e-9;
+  const noRevChange = same("cups") && same("cupPrice") && same("bags") && same("bagPrice");
+  const goals = [
+    { t:"Make net income at least $1,200", h:"Try price, volume or costs. Which lever does the most for the least pain?", ok:s.net >= 1200 },
+    { t:"Add $200 of net income without changing prices or volume", h:"Only costs may move: ingredients, wages, rent, marketing, interest. Tax takes a quarter of any extra profit, so you need to cut about $267 of costs to add $200 to net income.", ok:noRevChange && s.net >= S1.net + 200 },
+    { t:"Survive a slow month: cups sold fall to 600 or less, and net income stays above zero", h:"Fixed costs do not shrink when sales do. Which costs can you flex?", ok:cur.cups <= 600 && s.net > 0 },
+  ];
+  $("goals").innerHTML = goals.map(g => `<div class="goal ${g.ok ? "done" : ""}"><span class="chk">✓</span><div><b>${g.t}</b><small>${g.ok ? "Done. Nice." : g.h}</small></div></div>`).join("");
+}
+function buildSliders() {
+  $("sliders").innerHTML = SL.map(d => `<div class="sl"><label for="s-${d.k}">${d.label}<output id="o-${d.k}"></output></label><input type="range" id="s-${d.k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${cur[d.k]}">${d.note ? `<small>${d.note}</small>` : ""}</div>`).join("");
+  SL.forEach(d => { const el = $("s-" + d.k), out = $("o-" + d.k);
+    const sync = () => { cur[d.k] = +el.value; out.textContent = d.f(+el.value); renderWhat(); };
+    el.oninput = sync; out.textContent = d.f(cur[d.k]); });
+}
+$("reset").onclick = () => { cur = { ...Y1 }; buildSliders(); renderWhat(); };
+
+/* ------------------------------ 3. compare ------------------------------ */
+function renderCompare() {
+  const L = [["Revenue","rev",1,false],["Cost of goods sold","cogs",-1,false,true],["Gross profit","gp",1,true],["Operating expenses","opex",-1,false,true],
+             ["Operating income","ebit",1,true],["Interest expense","interest",-1,false,true],["Income tax","tax",-1,false,true],["Net income","net",1,true]];
+  $("isCompare").innerHTML = `<tr><th>Line</th><th>Year 1</th><th>Year 2</th><th>Change</th><th>% change</th><th>Y1 % of sales</th><th>Y2 % of sales</th></tr>` +
+    L.map(([l, k, sg, sub, ind]) => {
+      const a = sg * S1[k], b = sg * S2[k], d = b - a, p = a ? d / Math.abs(a) : 0;
+      const good = (sg === 1) ? d > 0 : d > 0 ? false : true;   // cost lines: rising cost is bad
+      const cls = Math.abs(p) < 0.02 ? "flat" : (k === "cogs" || k === "opex" || k === "interest" || k === "tax" ? (d < 0 ? "up" : "down") : (d > 0 ? "up" : "down"));
+      return `<tr class="${sub ? "sub" : ""} ${ind ? "indent" : ""}"><td>${l}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${cls}">${sgn(d)}${money(Math.abs(d))}</td><td class="${cls}">${sgn(p)}${pc(Math.abs(p), 0)}</td><td class="heat">${pc(S1[k] / S1.rev)}</td><td class="heat">${pc(S2[k] / S2.rev)}</td></tr>`;
+    }).join("");
+}
+const BR = [
+  { l:"Gross profit (sales less ingredients)", d:S2.gp - S1.gp },
+  { l:"Wages", d:-(Y2.wages - Y1.wages) },
+  { l:"Rent", d:-(Y2.rent - Y1.rent) },
+  { l:"Marketing, utilities", d:-((Y2.marketing + Y2.util) - (Y1.marketing + Y1.util)) },
+  { l:"Depreciation", d:-(Y2.dep - Y1.dep) },
+  { l:"Interest", d:-(S2.interest - S1.interest) },
+  { l:"Income tax", d:-(S2.tax - S1.tax) },
+];
+function renderQuiz3(answer) {
+  const worst = BR.slice().sort((a, b) => a.d - b.d)[0];
+  const opts = ["Gross profit fell, because of the cup promotion", "Wages grew far faster than sales", "Interest on the new loan", "Income tax went up"];
+  const right = 1;
+  let h = `<h3>Your call</h3><p>Revenue rose ${pc(S2.rev / S1.rev - 1, 0)} but net income fell ${pc(1 - S2.net / S1.net, 0)}, from ${money(S1.net)} to ${money(S2.net)}. Which single change took the most away from profit?</p><div class="opts">`;
+  opts.forEach((o, i) => { h += `<button class="opt ${answer != null ? (i === right ? "right" : i === answer ? "wrong" : "") : ""}" type="button" data-a="${i}" ${answer != null ? "disabled" : ""}>${o}</button>`; });
+  h += `</div>`;
+  if (answer != null) {
+    const mx = Math.max(...BR.map(b => Math.abs(b.d)));
+    h += `<div class="fb"><b>${answer === right ? "Right." : "Not quite."}</b> Here is how Year 1 net income of ${money(S1.net)} turned into ${money(S2.net)}. Each bar is how much that line added to (green) or took from (red) profit.</div><div class="bridge">` +
+      BR.map(b => { const w = Math.abs(b.d) / mx * 50; return `<div class="br"><span>${b.l}</span><div class="tr"><i style="${b.d < 0 ? `right:50%;width:${w}%;background:var(--bad)` : `left:50%;width:${w}%;background:var(--good)`}"></i></div><span class="v ${b.d < 0 ? "down" : "up"}">${sgn(b.d)}${money(Math.abs(b.d))}</span></div>`; }).join("") + `</div>
+      <p><b>${worst.l}</b> was the biggest drag at ${money(worst.d)}. Gross profit actually <i>rose</i> in dollars (${sgn(BR[0].d)}${money(Math.abs(BR[0].d))}) even though the gross margin slipped from ${pc(S1.gm)} to ${pc(S2.gm)}: more cups at a lower price and higher ingredient costs. Taxes helped, because profit fell and so did the tax bill.</p>
+      <p><b>The lesson.</b> Growth is not profit. Year 2 added about ${money((Y2.wages - Y1.wages) + (Y2.rent - Y1.rent))} a month of extra wages and rent that the extra sales did not cover. Look at the common-size columns above: operating expenses went from ${pc(S1.opex / S1.rev, 0)} to ${pc(S2.opex / S2.rev, 0)} of sales.</p>`;
+  }
+  $("quiz3").innerHTML = h;
+  $("quiz3").querySelectorAll(".opt").forEach(b => b.onclick = () => renderQuiz3(+b.dataset.a));
+}
+
+/* ------------------------------ 4. quiz ------------------------------ */
+let qi = 0, qscore = 0, qans = null;
+function renderQ() {
+  if (qi >= Q.length) {
+    $("quiz").innerHTML = `<div class="q-progress">Finished</div><div class="score">${qscore} / ${Q.length}</div><p>${qscore >= 7 ? "Excellent. You can read an income statement and explain what moves it." : qscore >= 5 ? "Solid. Revisit the lines you missed in step 1 and try the challenges in step 2." : "Worth another pass. Go back to step 1, reveal each line and read the explanation."}</p><div class="row-actions"><button class="btn" id="again" type="button">Try again</button><button class="btn ghost" data-go="1" type="button">Back to step 1</button></div>`;
+    $("again").onclick = () => { qi = 0; qscore = 0; qans = null; renderQ(); };
+    $("quiz").querySelector("[data-go]").onclick = () => showMod(1);
+    return;
+  }
+  const q = Q[qi];
+  $("quiz").innerHTML = `<div class="q-progress">Question ${qi + 1} of ${Q.length} &middot; score ${qscore}</div><h3>${q.q}</h3><div class="opts">${q.o.map((o, i) =>
+    `<button class="opt ${qans != null ? (i === q.a ? "right" : i === qans ? "wrong" : "") : ""}" type="button" data-i="${i}" ${qans != null ? "disabled" : ""}>${o}</button>`).join("")}</div>` +
+    (qans != null ? `<div class="fb"><b>${qans === q.a ? "Correct." : "Not quite."}</b> ${q.e}</div><div class="row-actions"><button class="btn" id="qnext" type="button">${qi === Q.length - 1 ? "See my score" : "Next question"} &rarr;</button></div>` : "");
+  $("quiz").querySelectorAll(".opt").forEach(b => b.onclick = () => { qans = +b.dataset.i; if (qans === q.a) qscore++; renderQ(); });
+  if ($("qnext")) $("qnext").onclick = () => { qi++; qans = null; renderQ(); };
+}
+
+/* ------------------------------ start ------------------------------ */
+renderBuild(); buildSliders(); renderWhat(); renderCompare(); renderQuiz3(null); renderQ();
+const start = parseInt((location.hash || "#1").slice(1), 10);
+showMod(start >= 1 && start <= 4 ? start : 1);
+</script>
+</body>
+</html>
